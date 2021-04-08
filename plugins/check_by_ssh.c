@@ -220,7 +220,7 @@ process_arguments (int argc, char **argv)
 			timeout_interval = parse_timeout_string (optarg);
 			break;
 		case 'H':									/* host */
-			host_or_die(optarg);
+                        /* (vjrj) host_or_die(optarg); */
 			hostname = optarg;
 			break;
 		case 'p': /* port number */
@@ -319,7 +319,7 @@ process_arguments (int argc, char **argv)
 		if (c <= argc) {
 			die (STATE_UNKNOWN, _("%s: You must provide a host name\n"), progname);
 		}
-		host_or_die(argv[c]);
+		/* (vjrj) host_or_die(argv[c]); */
 		hostname = argv[c++];
 	}
 
