@@ -58,6 +58,7 @@ char *host_shortname = NULL;
 char **service;
 int passive = FALSE;
 int verbose = FALSE;
+int json = FALSE;
 
 int
 main (int argc, char **argv)
@@ -145,8 +146,13 @@ main (int argc, char **argv)
 		if (service[commands] && status_text
 			&& sscanf (chld_out.line[i], "STATUS CODE: %d", &cresult) == 1)
 		{
-			fprintf (fp, "[%d] PROCESS_SERVICE_CHECK_RESULT;%s;%s;%d;%s\n",
+			if (json)
+                            fprintf (fp, "%dþ%sþ%sþ%dþ\"%s\"\n",
 			         (int) local_time, host_shortname, service[commands++],
+			         cresult, status_text);
+                        else
+                            fprintf (fp, "[%d] PROCESS_SERVICE_CHECK_RESULT;%s;%s;%d;%s\n",
+                                 (int) local_time, host_shortname, service[commands++],
 			         cresult, status_text);
 		}
 	}
@@ -164,10 +170,11 @@ process_arguments (int argc, char **argv)
 
 	int option = 0;
 	static struct option longopts[] = {
-		{"version", no_argument, 0, 'V'},
+                                           {"version", no_argument, 0, 'V'},
 		{"help", no_argument, 0, 'h'},
 		{"verbose", no_argument, 0, 'v'},
 		{"fork", no_argument, 0, 'f'},
+		{"json", no_argument, 0, 'j'},
 		{"timeout", required_argument, 0, 't'},
 		{"host", required_argument, 0, 'H'},    /* backward compatibility */
 		{"hostname", required_argument, 0, 'H'},
@@ -200,7 +207,7 @@ process_arguments (int argc, char **argv)
 			strcpy (argv[c], "-t");
 
 	while (1) {
-		c = getopt_long (argc, argv, "Vvh1246fqt:H:O:p:i:u:l:C:S::E::n:s:o:F:", longopts,
+		c = getopt_long (argc, argv, "Vvjh1246fqt:H:O:p:i:u:l:C:S::E::n:s:o:F:", longopts,
 		                 &option);
 
 		if (c == -1 || c == EOF)
@@ -215,6 +222,9 @@ process_arguments (int argc, char **argv)
 			exit (STATE_OK);
 		case 'v':									/* help */
 			verbose = TRUE;
+			break;
+		case 'j':									/* json output */
+			json = TRUE;
 			break;
 		case 't':									/* timeout period */
 			timeout_interval = parse_timeout_string (optarg);
@@ -407,6 +417,8 @@ print_help (void)
   printf ("    %s\n", _("Ignore all or (if specified) first n lines on STDERR [optional]"));
   printf (" %s\n", "-f");
   printf ("    %s\n", _("tells ssh to fork rather than create a tty [optional]. This will always return OK if ssh is executed"));
+  printf (" %s\n", "-j, --json");
+  printf ("    %s\n", _("json output (not useful for nagios)"));
   printf (" %s\n","-C, --command='COMMAND STRING'");
   printf ("    %s\n", _("command to execute on the remote machine"));
   printf (" %s\n","-l, --logname=USERNAME");
